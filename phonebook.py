@@ -6,6 +6,11 @@ import os
 import pprint
 import sqlite3
 
+import database
+
+
+DEFAULT_DATABASE = 'phonebook.db'
+
 
 def load_phonebooks():
     """Finds all the .pb files in the current directory, reads them,
@@ -16,8 +21,8 @@ def load_phonebooks():
     return [read_phonebook(filename) for filename in filenames]
 
 
-def phonebook_exists(filename):
-    """Checks to see if a given phonebook exists as a table in phonebook.db"""
+def phonebook_exists(table, database):
+    """Checks to see if a given phonebook exists as a table in a database"""
 
     return os.path.exists(filename)
 
@@ -109,14 +114,19 @@ def change(args):
 
 
 def create(args):
+    """Invoked with the `create` command line argument.
+    Creates a new table (phonebook) in the given database. Throws an exception
+    if the table already exists in the database."""
+    print args.b, args.db
+    if database.table_exists(args.b, args.db):
+        print args.b, args.db
+        raise Exception("Phonebook already exists in the database.") # % (
+                    # args.b, args.db)
 
-    if phonebook_exists(args.b):
-        raise Exception("Hey that phonebook already exists")
+    else:
+        database.create_table(args.b, args.db)
 
-    with open(args.b, 'w') as phonebook_file:
-        pass
-
-    print "Created phonebook in the current directory"
+    print "Created phonebook %s in the %s database." % (args.b, args.db)
 
 
 def lookup(args):
@@ -212,7 +222,7 @@ def parse():
     # (after the subparser commands) without adding it manually to each
     # subparser?
     parser.add_argument('-b', help="name of the phonebook table in the database") 
-    parser.add_argument('--db', default='phonebook.db', 
+    parser.add_argument('--db', default=DEFAULT_DATABASE, 
             help="name of the database file")   
 
     # Adding subparsers so that different commands can have different
@@ -231,7 +241,7 @@ def parse():
     parser_change.set_defaults(func=change) 
 
     parser_create = subparsers.add_parser('create')
-    parser_create.add_argument('b', help="name of phonebook table in phonebook.db")
+    parser_create.add_argument('b', help="name of phonebook table in database")
     parser_create.set_defaults(func=create)
 
     parser_lookup = subparsers.add_parser('lookup')
@@ -254,7 +264,9 @@ def parse():
 if __name__ == '__main__':
     args = parse()
 
-    # args.db defaults to 'phonebook.db', unless the --db argument is specified
+    if args.db != DEFAULT_DATABASE and not database.database_exists(args.db):
+        raise Exception("Database %s doesn't exist!" % args.db)
+    
     conn = sqlite3.connect(args.db)
     c = conn.cursor()
     args.func(args)
