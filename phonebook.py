@@ -13,65 +13,14 @@ DEFAULT_DATABASE = 'phonebook.db'
 DEFAULT_PHONEBOOK = 'phonebook'
 
 
-def load_phonebooks():
-    """Finds all the .pb files in the current directory, reads them,
-    and returns a list of the phonebook dictionaries"""
-    
-    filenames = glob.glob("*.pb")
+def print_lookup_results(records, value, phonebook):
 
-    return [read_phonebook(filename) for filename in filenames]
-
-
-def read_phonebook(filename):
-    """Reads the given filename and returns a dictionary containing the
-    phonebook entries"""
-
-    phonebook = {}
-
-    with open(filename, 'r') as phonebook_file:
-
-        for line in phonebook_file:
-            line = line.rstrip('\n').split('\t')
-            phonebook[line[0]] = line[1]
-
-    return phonebook
-
-
-def write_phonebook(phonebook, filename):
-    """Writes a phonebook -- given by a dictionary -- to a file."""
-    with open(filename, 'w') as phonebook_file:
-        for key, value in phonebook.items():
-            phonebook_file.write(key + '\t' + value + '\n')
-
-
-def entry_exists(name, filename):
-    """Checks to see if the given name already exists in the given phonebook."""
-
-    # Reads the phonebook file and returns a dictionary with the entries
-    phonebook = read_phonebook(filename)
-    
-    return name in phonebook
-
-
-def add_entry(name, number, filename):
-    """Adds an entry to a given phonebook, assuming that the entry doesn't
-    already exist in the phonebook."""
-
-    with open(filename, 'a') as phonebook_file:
-        phonebook_file.write(args.name + '\t' + args.number + '\n')
-
-
-def remove_entry(name, filename):
-    """Removes an entry from a given phonebook"""
-
-    phonebook = read_phonebook(filename)
-
-    if name in phonebook:
-        del phonebook[name]
-        write_phonebook(phonebook, filename)
-
+    if records:
+        for record in records:
+            print "%s\t%s" % (record[0], record[1])
     else:
-        raise Exception("Hold up %s doesn't exist in %s." % (name, filename))
+        print "%s isn't in %s." % (value, phonebook)
+
 
 
 def add(args):
@@ -126,11 +75,7 @@ def lookup(args):
 
     records = database.lookup_record(args.name, 'name', args.b, args.db)
     
-    if records:
-        for record in records:
-            print "%s\t%s" % (record[0], record[1])
-    else:
-        print "%s isn't in %s." % (args.name, args.b)
+    print_lookup_results(records, args.name, args.b)
 
     return records
 
@@ -148,41 +93,18 @@ def remove(args):
 
 
 def reverse_lookup(args):
-    if args.b:
-        
-        if not database.table_exists(args.b):
-            raise Exception("%s doesn't exist" % args.b)
 
-        phonebook = read_phonebook(args.b)
+    # TODOs:
+    # Allow for looking up against all phonebooks
+    # Allow for partial matching
+    if not database.table_exists(args.b, args.db):
+        raise Exception("%s doesn't exist in %s" % (args.b, args.db))
 
-        # Flip keys and values to lookup by number
-        phonebook = dict(zip(phonebook.values(), phonebook.keys()))
-        
-        if args.number in phonebook:
-            print "Name: %s, Number: %s" % (phonebook[args.number], args.number)
-            return phonebook[args.number]
-        else:
-            print "%s isn't in %s." % (args.number, args.b)
-            return
+    records = database.lookup_record(args.number, 'number', args.b, args.db)
 
-    else:
-
-        # A list of phonebooks, which are dictionaries
-        # It seems super wasteful to have all this in memory!
-        phonebooks = load_phonebooks()
-        results = []
-        for phonebook in phonebooks:
-            phonebook = dict(zip(phonebook.values(), phonebook.keys()))
-            if args.number in phonebook:
-                results.append((phonebook[args.number], args.number))
-
-        if results:
-            for entry in results:
-                print "%s\t%s" % (entry[0], entry[1])
-        else:
-            print "Oh noes! %s wasn't found in any phonebook!" % args.number
-
-        return results
+    print_lookup_results(records, args.number, args.b)
+    
+    return records
 
 
 def parse():
@@ -239,13 +161,8 @@ if __name__ == '__main__':
     if args.db != DEFAULT_DATABASE and not database.database_exists(args.db):
         raise Exception("Database %s doesn't exist!" % args.db)
     
-    conn = sqlite3.connect(args.db)
-    c = conn.cursor()
     args.func(args)
 
-    # General things:
-    # Should I pass var(args) to these functions and use kwargs instead?
-    # There's a lot of repetition/duplication in my exception handling.
-    # I should try using a database!
-    # I attemped to make this code easy-ish to transfer to a database...
-    # How could I have done that better?
+# General things:
+# Should I pass var(args) to these functions and use kwargs instead?
+# There's a lot of repetition/duplication in my exception handling.
