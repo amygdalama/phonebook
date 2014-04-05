@@ -83,7 +83,7 @@ def add(args):
         raise Exception("%s doesn't exist" % args.b)
 
     # To-do: change this to also print out the existing phone number
-    if database.lookup_records(args.name, 'name', args.b, args.db):
+    if database.lookup_record(args.name, 'name', args.b, args.db):
         raise Exception("%s already exists in %s. "
             "Use the `change` command to update the existing entry."
             % (args.name, args.b))
@@ -95,15 +95,9 @@ def add(args):
 
 
 def change(args):
-
-    if not database.table_exists(args.b):
-        raise Exception("%s doesn't exist" % args.b)
-
-    if not entry_exists(args.name, args.b):
-        raise Exception("%s doesn't exist in %s." % (args.name, args.b))
     
-    remove_entry(args.name, args.b)
-    add_entry(args.name, args.number, args.b)        
+    remove(args)
+    add(args)
 
 
 def create(args):
@@ -130,7 +124,7 @@ def lookup(args):
     if not database.table_exists(args.b, args.db):
         raise Exception("%s doesn't exist in %s" % (args.b, args.db))
 
-    records = database.lookup_records(args.name, 'name', args.b, args.db)
+    records = database.lookup_record(args.name, 'name', args.b, args.db)
     
     if records:
         for record in records:
@@ -142,16 +136,15 @@ def lookup(args):
 
 
 def remove(args):
-    if not args.b:
-        raise Exception("Yo, you need to provide a phonebook with -b")
 
-    if not database.table_exists(args.b):
-        raise Exception("%s doesn't exist" % args.b)
+    if not database.table_exists(args.b, args.db):
+        raise Exception("%s doesn't exist in %s" % (args.b, args.db))
 
-    if not entry_exists(args.name, args.b):
+    if not database.lookup_record(args.name, 'name', args.b, args.db):
         raise Exception("%s doesn't exist in %s." % (args.name, args.b))
     
-    remove_entry(args.name, args.b)
+    database.delete_record(args.name, 'name', args.b, args.db)
+    print "Removed %s from %s." % (args.name, args.b)
 
 
 def reverse_lookup(args):

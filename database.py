@@ -36,7 +36,7 @@ def read_table(table, database):
         c = con.cursor()    
 
 
-def lookup_records(value, column, table, database):
+def lookup_record(value, column, table, database):
     """Checks to see if a specific value exists in the given column
     in the given database table."""
 
@@ -53,8 +53,16 @@ def add_record(values, table, database):
         c.execute("INSERT INTO %s VALUES %s" % (table, values))  
 
 
+def delete_record(value, column, table, database):
+    with sqlite3.connect(database) as con:
+        c = con.cursor()
+        c.execute("DELETE FROM %s WHERE %s=?" % (table, column), (value,))
+
+
 if __name__ == '__main__':
-    # values = ('Sarah', '888-8888')
-    # add_record(values, 'phonebook', 'phonebook.db')
-    print lookup_record('Sarah', 'name', 'phonebook', 'phonebook.db')
+    values = ('Charles', '888-8888')
+    add_record(values, 'phonebook', 'phonebook.db')
+    print lookup_record('Charles', 'name', 'phonebook', 'phonebook.db')
+    delete_record('Charles', 'name', 'phonebook', 'phonebook.db')
+    print lookup_record('Charles', 'name', 'phonebook', 'phonebook.db')
 
