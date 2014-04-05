@@ -10,6 +10,7 @@ import database
 
 
 DEFAULT_DATABASE = 'phonebook.db'
+DEFAULT_PHONEBOOK = 'phonebook'
 
 
 def load_phonebooks():
@@ -19,12 +20,6 @@ def load_phonebooks():
     filenames = glob.glob("*.pb")
 
     return [read_phonebook(filename) for filename in filenames]
-
-
-def phonebook_exists(table, database):
-    """Checks to see if a given phonebook exists as a table in a database"""
-
-    return os.path.exists(filename)
 
 
 def read_phonebook(filename):
@@ -80,12 +75,11 @@ def remove_entry(name, filename):
 
 
 def add(args):
-    """Main function that's invoked with the 'add' command line argument"""
+    """Invoked with the `add` command line argument. Attempts to add 
+    an entry to a specified phonebook. Raises exceptions if the phonebook
+    doesn't exist or if the entry already exists in the phonebook."""
 
-    if not args.b:
-        raise Exception("Yo, you need to provide a phonebook with -b")
-
-    if not phonebook_exists(args.b):
+    if not database.table_exists(args.b):
         raise Exception("%s doesn't exist" % args.b)
 
     # To-do: change this to also print out the existing phone number
@@ -103,7 +97,7 @@ def change(args):
     if not args.b:
         raise Exception("Yo, you need to provide a phonebook with -b")
 
-    if not phonebook_exists(args.b):
+    if not database.table_exists(args.b):
         raise Exception("%s doesn't exist" % args.b)
 
     if not entry_exists(args.name, args.b):
@@ -132,7 +126,7 @@ def create(args):
 def lookup(args):
     if args.b:
         
-        if not phonebook_exists(args.b):
+        if not database.table_exists(args.b):
             raise Exception("%s doesn't exist" % args.b)
 
         phonebook = read_phonebook(args.b)
@@ -167,7 +161,7 @@ def remove(args):
     if not args.b:
         raise Exception("Yo, you need to provide a phonebook with -b")
 
-    if not phonebook_exists(args.b):
+    if not database.table_exists(args.b):
         raise Exception("%s doesn't exist" % args.b)
 
     if not entry_exists(args.name, args.b):
@@ -179,7 +173,7 @@ def remove(args):
 def reverse_lookup(args):
     if args.b:
         
-        if not phonebook_exists(args.b):
+        if not database.table_exists(args.b):
             raise Exception("%s doesn't exist" % args.b)
 
         phonebook = read_phonebook(args.b)
@@ -221,7 +215,8 @@ def parse():
     # How can I elegantly make this option available to all subparsers
     # (after the subparser commands) without adding it manually to each
     # subparser?
-    parser.add_argument('-b', help="name of the phonebook table in the database") 
+    parser.add_argument('-b', default=DEFAULT_PHONEBOOK,
+            help="name of the phonebook table in the database") 
     parser.add_argument('--db', default=DEFAULT_DATABASE, 
             help="name of the database file")   
 
