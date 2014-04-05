@@ -1,10 +1,6 @@
 #! /usr/bin/env python
 
 import argparse
-import glob
-import os
-import pprint
-import sqlite3
 
 import database
 
