@@ -36,7 +36,7 @@ def read_table(table, database):
         c = con.cursor()    
 
 
-def lookup_record(value, column, table, database):
+def lookup_records(value, column, table, database):
     """Checks to see if a specific value exists in the given column
     in the given database table."""
 

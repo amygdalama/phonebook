@@ -83,7 +83,7 @@ def add(args):
         raise Exception("%s doesn't exist" % args.b)
 
     # To-do: change this to also print out the existing phone number
-    if database.lookup_record(args.name, 'name', args.b, args.db):
+    if database.lookup_records(args.name, 'name', args.b, args.db):
         raise Exception("%s already exists in %s. "
             "Use the `change` command to update the existing entry."
             % (args.name, args.b))
@@ -95,9 +95,6 @@ def add(args):
 
 
 def change(args):
-
-    if not args.b:
-        raise Exception("Yo, you need to provide a phonebook with -b")
 
     if not database.table_exists(args.b):
         raise Exception("%s doesn't exist" % args.b)
@@ -126,37 +123,22 @@ def create(args):
 
 
 def lookup(args):
-    if args.b:
-        
-        if not database.table_exists(args.b):
-            raise Exception("%s doesn't exist" % args.b)
 
-        phonebook = read_phonebook(args.b)
-        
-        if args.name in phonebook:
-            print "Name: %s, Number: %s" % (args.name, phonebook[args.name])
-            return phonebook[args.name]
-        else:
-            print "%s isn't in %s." % (args.name, args.b)
-            return
+    # TODOs:
+    # Allow for looking up against all phonebooks
+    # Allow for partial matching
+    if not database.table_exists(args.b, args.db):
+        raise Exception("%s doesn't exist in %s" % (args.b, args.db))
 
+    records = database.lookup_records(args.name, 'name', args.b, args.db)
+    
+    if records:
+        for record in records:
+            print "%s\t%s" % (record[0], record[1])
     else:
+        print "%s isn't in %s." % (args.name, args.b)
 
-        # A list of phonebooks, which are dictionaries
-        # It seems super wasteful to have all this in memory!
-        phonebooks = load_phonebooks()
-        results = []
-        for phonebook in phonebooks:
-            if args.name in phonebook:
-                results.append((args.name, phonebook[args.name]))
-
-        if results:
-            for entry in results:
-                print "%s\t%s" % (entry[0], entry[1])
-        else:
-            print "Oh noes! %s wasn't found in any phonebook!" % args.name
-
-        return results
+    return records
 
 
 def remove(args):
