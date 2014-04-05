@@ -233,11 +233,11 @@ def parse():
     parser_lookup.set_defaults(func=lookup)
 
     parser_remove = subparsers.add_parser('remove')
-    parser_remove.add_argument('name')
+    parser_remove.add_argument('name', help="name of person as a string")
     parser_remove.set_defaults(func=remove)
 
     parser_reverse_lookup = subparsers.add_parser('reverse-lookup')
-    parser_reverse_lookup.add_argument('number')
+    parser_reverse_lookup.add_argument('number', help="phone number as a string")
     parser_reverse_lookup.set_defaults(func=reverse_lookup)
 
     args = parser.parse_args() 
@@ -247,14 +247,11 @@ def parse():
 
 if __name__ == '__main__':
     args = parse()
-
-    # should I change this to 
-    # args.func(var(args)) ?
-    # Then the functions would take in **kwargs for parameters
-    # Which is better? Is the difference mainly stylistic?
     args.func(args)
 
     # General things:
+    # Should I pass var(args) to these functions and use kwargs instead?
     # There's a lot of repetition/duplication in my exception handling.
     # I should try using a database!
-    # I attemped to make this code easy-ish to transfer to a database
+    # I attemped to make this code easy-ish to transfer to a database...
+    # How could I have done that better?
