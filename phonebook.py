@@ -79,17 +79,19 @@ def add(args):
     an entry to a specified phonebook. Raises exceptions if the phonebook
     doesn't exist or if the entry already exists in the phonebook."""
 
-    if not database.table_exists(args.b):
+    if not database.table_exists(args.b, args.db):
         raise Exception("%s doesn't exist" % args.b)
 
     # To-do: change this to also print out the existing phone number
-    if entry_exists(args.name, args.b):
+    if database.lookup_record(args.name, 'name', args.b, args.db):
         raise Exception("%s already exists in %s. "
             "Use the `change` command to update the existing entry."
             % (args.name, args.b))
 
     else:
-        add_entry(args.name, args.number, args.b)
+        database.add_record((args.name, args.number), args.b, args.db)
+        print "Added the following entry to %s:" % args.b
+        print "%s\t%s" % (args.name, args.number)
 
 
 def change(args):
