@@ -31,11 +31,6 @@ def create_table(table, database):
         c.execute("CREATE TABLE %s (name text, number text)" % table)
 
 
-def read_table(table, database):
-    with sqlite3.connect(database) as con:
-        c = con.cursor()    
-
-
 def lookup_record(value, column, table, database):
     """Checks to see if a specific value exists in the given column
     in the given database table."""
