@@ -117,11 +117,11 @@ def create(args):
     """Invoked with the `create` command line argument.
     Creates a new table (phonebook) in the given database. Throws an exception
     if the table already exists in the database."""
-    print args.b, args.db
+
     if database.table_exists(args.b, args.db):
-        print args.b, args.db
-        raise Exception("Phonebook already exists in the database.") # % (
-                    # args.b, args.db)
+
+        raise Exception("Phonebook %s already exists in the database %s." % (
+                    args.b, args.db))
 
     else:
         database.create_table(args.b, args.db)
