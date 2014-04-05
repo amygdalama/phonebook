@@ -4,6 +4,7 @@ import argparse
 import glob
 import os
 import pprint
+import sqlite3
 
 
 def load_phonebooks():
@@ -16,7 +17,7 @@ def load_phonebooks():
 
 
 def phonebook_exists(filename):
-    """Checks to see if a given phonebook exists in the current directory"""
+    """Checks to see if a given phonebook exists as a table in phonebook.db"""
 
     return os.path.exists(filename)
 
@@ -74,11 +75,12 @@ def remove_entry(name, filename):
 
 
 def add(args):
+    """Main function that's invoked with the 'add' command line argument"""
 
     if not args.b:
         raise Exception("Yo, you need to provide a phonebook with -b")
 
-    if not phonebook_exists(args.filename):
+    if not phonebook_exists(args.b):
         raise Exception("%s doesn't exist" % args.b)
 
     # To-do: change this to also print out the existing phone number
@@ -108,10 +110,10 @@ def change(args):
 
 def create(args):
 
-    if phonebook_exists(args.filename):
+    if phonebook_exists(args.b):
         raise Exception("Hey that phonebook already exists")
 
-    with open(args.filename, 'w') as phonebook_file:
+    with open(args.b, 'w') as phonebook_file:
         pass
 
     print "Created phonebook in the current directory"
@@ -209,7 +211,9 @@ def parse():
     # How can I elegantly make this option available to all subparsers
     # (after the subparser commands) without adding it manually to each
     # subparser?
-    parser.add_argument('-b', help="name of the file storing the phonebook")    
+    parser.add_argument('-b', help="name of the phonebook table in the database") 
+    parser.add_argument('--db', default='phonebook.db', 
+            help="name of the database file")   
 
     # Adding subparsers so that different commands can have different
     # required positional arguments
@@ -227,7 +231,7 @@ def parse():
     parser_change.set_defaults(func=change) 
 
     parser_create = subparsers.add_parser('create')
-    parser_create.add_argument('filename', help="filename of phonebook ending in .pb")
+    parser_create.add_argument('b', help="name of phonebook table in phonebook.db")
     parser_create.set_defaults(func=create)
 
     parser_lookup = subparsers.add_parser('lookup')
@@ -249,6 +253,10 @@ def parse():
 
 if __name__ == '__main__':
     args = parse()
+
+    # args.db defaults to 'phonebook.db', unless the --db argument is specified
+    conn = sqlite3.connect(args.db)
+    c = conn.cursor()
     args.func(args)
 
     # General things:
