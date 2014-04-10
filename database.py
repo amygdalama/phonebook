@@ -1,7 +1,22 @@
+import os
 import sqlite3
 
 # TODOs:
 # Find a way to write queries without using string interpolation
+
+
+def create_database(filename):
+
+    if os.path.exists(filename):
+        raise Exception("That database already exists!")
+    
+    else:
+        with sqlite3.connect(database) as con:
+            pass
+
+
+def delete_database(filename):
+    os.remove(filename)    
 
 
 def database_exists(filename):

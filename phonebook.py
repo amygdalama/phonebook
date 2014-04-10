@@ -146,13 +146,12 @@ def parse():
     parser_reverse_lookup.add_argument('number', help="phone number as a string")
     parser_reverse_lookup.set_defaults(func=reverse_lookup)
 
-    args = parser.parse_args() 
-
-    return args   
+    return parser   
 
 
 if __name__ == '__main__':
-    args = parse()
+    parser = parse()
+    args = parser.parse_args() 
 
     if args.db != DEFAULT_DATABASE and not database.database_exists(args.db):
         raise Exception("Database %s doesn't exist!" % args.db)
