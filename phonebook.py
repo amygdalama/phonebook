@@ -51,7 +51,7 @@ def create(args):
     if the table already exists in the database."""
 
     if database.table_exists(args.b, args.db):
-
+        database.add_record(("bad_thing", "82342"), args.b, args.db)
         raise Exception("Phonebook %s already exists in the database %s." % (
                     args.b, args.db))
 

@@ -11,7 +11,7 @@ def create_database(filename):
         raise Exception("That database already exists!")
     
     else:
-        with sqlite3.connect(database) as con:
+        with sqlite3.connect(filename) as con:
             pass
 
 
