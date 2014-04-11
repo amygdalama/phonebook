@@ -1,4 +1,48 @@
-## Tests
+# Tests
+
+## case 1:
+    * properties
+        * database doesn't exist
+        * parser arguments
+            * db = NONEXISTENT
+            * nothing else matters
+    * assert
+        * add raises exception
+        * change raises exception
+        * create raises expection
+        * lookup raises exception
+        * remove raises exception
+        * reverse-lookup raises exception
+
+## case 2:
+    * properties
+        * database exists but table doesn't exist
+        * parser args
+            * db = TEST
+            * table = NONEXISTENT
+    * assert
+        * add raises exception
+        * change raises exception
+        * create creates new table
+            * assert new table exists
+            * assert previous table unchanged
+        * lookup raises exception
+        * remove raises exception
+        * reverse-lookup raises exception
+
+
+
+
+
+
+
+
+
+
+==============================
+old news
+==============================
+
 
 ### Add
 
@@ -64,31 +108,3 @@
 
 
 
-## case 1:
-    * properties
-        * database doesn't exist
-        * parser arguments
-            * db = NONEXISTENT
-            * nothing else matters
-    * assert
-        * add raises exception
-        * change raises exception
-        * create raises expection
-        * lookup raises exception
-        * remove raises exception
-        * reverse-lookup raises exception
-## case 2:
-    * properties
-        * database exists but table doesn't exist
-        * parser args
-            * db = TEST
-            * table = NONEXISTENT
-    * assert
-        * add raises exception
-        * change raises exception
-        * create creates new table
-            * assert new table exists
-            * assert previous table unchanged
-        * lookup raises exception
-        * remove raises exception
-        * reverse-lookup raises exception

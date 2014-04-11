@@ -21,8 +21,35 @@ TEST_NUM = 'test_number'
 
 
 class DatabaseNonexistent(unittest.TestCase):
-    """Tests the commands in the case that the given database
-    doesn't exist."""
+    """Test case 1: database doesn't exist.
+    Every argument should raise an Exception for this case."""
+
+    def setUp(self):
+        if glob.glob('*.db'):
+            raise Exception(".db files exist on setUp!")
+
+    def tearDown(self):
+        if glob.glob('*.db'):
+            for db in glob.glob('*.db'):
+                database.delete_database(db)
+            raise Exception("New .db files were unintentionally created!")
+
+    def test_all(self):
+
+        # Overwrite the defaults for -b and --db
+        # so we can test the behavior of our script when
+        # we use default values for these arguments
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = TEST_PB
+        parser = phonebook.parse()
+        args_set = [parser.parse_args(args) for args in read_args()]
+        
+        for args in args_set:
+            nose.tools.assert_raises(Exception, args.func, args)
+
+class TableNonExistent(unittest.TestCase):
+    """Test case 2: table doesn't exist in database.
+    Every argument except `create` should raise an Exception."""
 
     def setUp(self):
         if glob.glob('*.db'):
@@ -32,23 +59,15 @@ class DatabaseNonexistent(unittest.TestCase):
         for db in glob.glob('*.db'):
             database.delete_database(db)
 
-    def add(self):
+def read_args(arg=None):
+    """Reads arguments from the arguments.txt file. If an arg is
+    specified, returns only the arguments that contain that arg.
+    Otherwise returns all arguments."""
 
-        # Overwrite the defaults for -b and --db
-        # so we can test the behavior of our script when
-        # we use default values for these arguments
-        phonebook.DEFAULT_DB = TEST_DB
-        phonebook.DEFAULT_PB = TEST_PB
-        parser = phonebook.parse()
-
-        args_set = [parser.parse_args(args) for args in read_args('add')]
-        for args in args_set:
-            nose.assert_raises(Exception, phonebook.add, args)
-
-
-
-def read_args(arg):
-    args_set = [line.split() for line in open('arguments.txt') 
-            if arg in line.split()]
+    if arg:
+        args_set = [line.split() for line in open('arguments.txt') 
+                if arg in line.split()]
+    else:
+        args_set = [line.split() for line in open('arguments.txt')]
     
     return args_set
