@@ -25,6 +25,7 @@ def add(args):
     an entry to a specified phonebook. Raises exceptions if the phonebook
     doesn't exist or if the entry already exists in the phonebook."""
 
+    print "add function called"
     if not database.table_exists(args.b, args.db):
         raise Exception("%s doesn't exist" % args.b)
 
