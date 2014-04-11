@@ -89,7 +89,6 @@ class TableNonExistent(unittest.TestCase):
             self.tearDown()
             self.setUp()
 
-
     def test_all_else(self):
         """Tests all arguments besides the create argument.
         These should all raise Exceptions."""

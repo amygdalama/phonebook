@@ -30,81 +30,49 @@
         * remove raises exception
         * reverse-lookup raises exception
 
-
-
-
-
-
-
-
-
-
-==============================
-old news
-==============================
-
-
-### Add
-
-* case 1:
-    * database - doesn't exist
-    * raise exception
-* case 2:
-    * database - exists
-    * table - doesn't exist
-    * raise exception
-* case 3:
-    * database - exists
-    * table - exists 
-    * record - exists
-    * raise exception
-* case 4:
-    * database - exists
-    * table - exists
-    * record - doesn't exist
-    * add record
-
-### Change
-
-* case 1:
-    * database - doesn't exist
-    * raise exception
-* case 2:
-    * database - exists
-    * table - doesn't exist
-    * raise exception
-* case 3:
-    * database - exists
-    * table - exists
-    * record - doesn't exist
-    * raise exception
-* case 4:
-    * database - exists
-    * table - exists 
-    * record - exists
-    * change record
-
-### Create
-
-* case 1:
+## case 3:
     * properties
-        * database - doesn't exist
+        * database and table both exist
     * assert
-        * raises exception
-* case 2:
-    * database - exists
-    * table - exists
-    * raise exception
-* case 3:
-    * database - exists
-    * table - doesn't exist
-    * create table
+        * create raises exception
 
-### Lookup
+## case 4:
+    * properties
+        * database and table both exist
+        * name doesn't exist
+    * assert
+        * add creates new record for name
+            * assert correct record was added
+            * assert no other records were added
+            * assert no other tables were added
+            * assert no other databases were created
+        * lookup raises Exception
+        
 
-### Remove
 
-### Reverse-Lookup
+
+
+
+
+
+
+
+
+==============================
+Commands
+==============================
+
+* Add
+
+* Change
+
+* Create
+
+* Lookup
+
+* Remove
+
+* Reverse-Lookup
 
 
 
