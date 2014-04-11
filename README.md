@@ -17,6 +17,7 @@ Most commands also have the `-b` and `--db` options:
 ##To-Dos
 
 * Tests! Write tests! How do I write tests?
+* Figure out how to make this a proper package so that you can import scripts in the tests.py script without having to modify sys.path
 * Figure out how to get this to work on someone else's computer without them having to add a symlink on their `$PATH`
 * Standardize phone number entries
 * Better use of `argparse`

@@ -2,11 +2,12 @@
 
 import argparse
 
+import config
 import database
 
 
-DEFAULT_DATABASE = 'phonebook.db'
-DEFAULT_PHONEBOOK = 'phonebook'
+DEFAULT_DATABASE = config.DEFAULT_DATABASE or 'phonebook.db'
+DEFAULT_PHONEBOOK = config.DEFAULT_PHONEBOOK or 'phonebook'
 
 
 def print_lookup_results(records, value, phonebook):
@@ -50,8 +51,9 @@ def create(args):
     Creates a new table (phonebook) in the given database. Throws an exception
     if the table already exists in the database."""
 
+    print args
+
     if database.table_exists(args.b, args.db):
-        database.add_record(("bad_thing", "82342"), args.b, args.db)
         raise Exception("Phonebook %s already exists in the database %s." % (
                     args.b, args.db))
 
