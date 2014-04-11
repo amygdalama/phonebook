@@ -27,6 +27,12 @@ def database_exists(filename):
     return os.path.exists(filename)    
 
 
+def table_exists(table, database):
+    """Checks to see if a table exists in a database."""
+
+    return table in list_tables(database)
+
+
 def list_tables(database):
     """Retrieves the list of table names in a database"""
     
@@ -90,6 +96,22 @@ def delete_record(value, column, table, database):
             c = con.cursor()
             c.execute("DELETE FROM %s WHERE %s=?" % 
                     (table, column), (value,))
+
+def tables_equal(table1, database1, table2, database2):
+
+    if not database_exists(database1):
+        raise Exception("%s doesn't exist!" % database1)
+
+    elif not database_exists(database2):
+        raise Exception("%s doesn't exist!" % database2)
+
+    elif not table_exists(table1, database1):
+        raise Exception("%s doesn't exist in %s!" % (table1, database1))
+
+    elif not table_exists(table2, database2):
+        raise Exception("%s doesn't exist in %s!" % (table2, database2))
+
+    return read_table(table1, database1) == read_table(table2, database2)
 
 
 def databases_equal(database1, database2):

@@ -30,6 +30,9 @@ class PhonebookTest(unittest.TestCase):
         database.create_database(TEST_DB)
         database.create_database(UNEDITED_DB)
 
+        if database.database_exists(NONEXISTENT_DB):
+            database.delete_database(NONEXISTENT_DB)
+
         # This is in a try/except because if it doesn't
         # work I want to delete the database
         try:
@@ -48,10 +51,13 @@ class PhonebookTest(unittest.TestCase):
     def tearDown(self):
         database.delete_database(TEST_DB)
         database.delete_database(UNEDITED_DB)
+        if database.database_exists(NONEXISTENT_DB):
+            raise Exception("nonexistent.db wasn't deleted")
 
 
 class CreatePhonebook(PhonebookTest):
         
+
     def test_db_doesnt_exist(self):
         """Create phonebook in a database that doesn't exist.
 
@@ -75,6 +81,7 @@ class CreatePhonebook(PhonebookTest):
         for args in args_set:
             args = parser.parse_args(args)
             nose.tools.assert_raises(Exception, phonebook.create, args)
+            nose.tools.assert_false(database.database_exists(NONEXISTENT_DB))
     
 
     def test_both_pb_and_db_exist(self):
@@ -100,12 +107,34 @@ class CreatePhonebook(PhonebookTest):
             args = parser.parse_args(args) 
             nose.tools.assert_raises(Exception, phonebook.create, args)
             nose.tools.assert_true(database.databases_equal(
-                    phonebook.DEFAULT_DB, UNEDITED_DB))
+                    TEST_DB, UNEDITED_DB))
+
 
     def test_db_exists_but_not_pb(self):
         """Create phonebook that doesn't already exist in a
-        database that already exists."""
-        pass      
+        database that already exists.
+
+        First check to make sure the table was created, and then 
+        make sure the other existing table was unchanged.
+
+        Delete the database after we run the test."""
+        
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = NONEXISTENT_PB
+
+        parser = phonebook.parse()
+
+        args_set = (['create', phonebook.DEFAULT_PB],
+                ['-b', phonebook.DEFAULT_PB, 'create', phonebook.DEFAULT_PB],
+                ['--db', phonebook.DEFAULT_DB, 'create', phonebook.DEFAULT_PB],
+                ['-b', phonebook.DEFAULT_PB, '--db', phonebook.DEFAULT_DB, 'create', phonebook.DEFAULT_PB])
+
+        for args in args_set:
+            args = parser.parse_args(args)
+            nose.tools.assert_true(database.table_exists(
+                    NONEXISTENT_PB, TEST_DB))
+
+            database.delete_database(NONEXISTENT_DB)
 
 
 

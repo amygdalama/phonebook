@@ -43,8 +43,10 @@
 ### Create
 
 * case 1:
-    * database - doesn't exist
-    * raise exception
+    * properties
+        * database - doesn't exist
+    * assert
+        * raises exception
 * case 2:
     * database - exists
     * table - exists
@@ -53,12 +55,38 @@
     * database - exists
     * table - doesn't exist
     * create table
-* table and database both exist => throw error
-* database exists but table doesn't => add table
-* database doesn't exist => throw error
 
 ### Lookup
 
 ### Remove
 
 ### Reverse-Lookup
+
+
+
+## case 1:
+    * properties
+        * database doesn't exist
+        * parser arguments
+            * db = NONEXISTENT
+            * nothing else matters
+    * assert
+        * add raises exception
+        * change raises exception
+        * create raises expection
+        * lookup raises exception
+        * remove raises exception
+        * reverse-lookup raises exception
+## case 2:
+    * properties
+        * database exists but table doesn't exist
+        * parser args
+            * db = TEST
+            * table = NONEXISTENT
+    * assert
+        * add
+        * change
+        * create
+        * lookup
+        * remove
+        * reverse-lookup
