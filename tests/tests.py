@@ -4,70 +4,108 @@ import unittest
 import nose
 
 # add parent directory to import database and phonebook scripts
+# how can I make the database and phonebook modules available
+# in a more elegant way? Would making this group of scripts a
+# "package" solve this problem?
 sys.path.insert(0, '../')
 
 import database
 import phonebook
 
 
+TEST_DB = 'test.db'
+TEST_PB = 'test'
+
+UNEDITED_DB = 'unedited.db'
+UNEDITED_PB = 'test'
+
+NONEXISTENT_DB = 'nonexistent.db'
+NONEXISTENT_PB = 'nonexistent'
+
+
 class PhonebookTest(unittest.TestCase):
 
     def setUp(self):
 
-        # Override defaults from config file to test defaults.
-        # Is there a better way to do this?
-        # Also - it's really interesting that this actually works!
-        phonebook.DEFAULT_DATABASE = 'test.db'
-        phonebook.DEFAULT_PHONEBOOK = 'test'
-        
-        self.parser = phonebook.parse()
-        database.create_database('test.db')
-        database.create_database('unedited.db')
+        database.create_database(TEST_DB)
+        database.create_database(UNEDITED_DB)
 
         # This is in a try/except because if it doesn't
         # work I want to delete the database
         try:
-            database.create_table('test', 'test.db')
+            database.create_table(TEST_PB, TEST_DB)
             database.add_record(('test_name', '888-888-8888'), 
-                    'test', 'test.db')
-            database.create_table('test', 'unedited.db')
+                    TEST_PB, TEST_DB)
+            database.create_table(UNEDITED_PB, UNEDITED_DB)
             database.add_record(('test_name', '888-888-8888'), 
-                    'test', 'unedited.db')
+                    UNEDITED_PB, UNEDITED_DB)
         except:
-            database.delete_database('test.db')
-            database.delete_database('unedited.db')
+            database.delete_database(TEST_DB)
+            database.delete_database(UNEDITED_DB)
             raise Exception("Couldn't add test records")
 
 
     def tearDown(self):
-        database.delete_database('test.db')
-        database.delete_database('unedited.db')
+        database.delete_database(TEST_DB)
+        database.delete_database(UNEDITED_DB)
 
 
 class CreatePhonebook(PhonebookTest):
+        
+    def test_db_doesnt_exist(self):
+        """Create phonebook in a database that doesn't exist.
 
-    def test_create_existing_phonebook(self):
-        """Create phonebook that already exists"""
+        First we ensure that creating a phonebook in a nonexistent
+        database raises an Exception. Then we ensure that the nonexistent
+        database wasn't created."""
 
-        args_set = (['create', 'test'],
-                    ['-b', 'test', 'create', 'test'],
-                    ['--db', 'test.db', 'create', 'test'],
-                    ['-b', 'test', '--db', 'test.db', 'create', 'test'])
+        # Override defaults from config file to test defaults.
+        # Is there a better way to do this?
+        # Also - it's really interesting that this actually works!
+        phonebook.DEFAULT_DB = NONEXISTENT_DB
+        phonebook.DEFAULT_PB = NONEXISTENT_PB
+
+        parser = phonebook.parse()
+
+        args_set = (['create', phonebook.DEFAULT_PB],
+                ['-b', phonebook.DEFAULT_PB, 'create', phonebook.DEFAULT_PB],
+                ['--db', phonebook.DEFAULT_DB, 'create', phonebook.DEFAULT_PB],
+                ['-b', phonebook.DEFAULT_PB, '--db', phonebook.DEFAULT_DB, 'create', phonebook.DEFAULT_PB])
 
         for args in args_set:
+            args = parser.parse_args(args)
+            nose.tools.assert_raises(Exception, phonebook.create, args)
+    
 
-            args = self.parser.parse_args(args) 
+    def test_both_pb_and_db_exist(self):
+        """Create phonebook that already exists in a database
+        that already exists.
+
+        Since TEST_DB and TEST_PB are created on setUp, we should
+        expect an Exception to be thrown when we try creating the
+        TEST_PB inside the TEST_DB again. After our attempt, we 
+        check to see if the original TEST_DB is unchanged."""
+
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = TEST_PB
+
+        parser = phonebook.parse()
+
+        args_set = (['create', phonebook.DEFAULT_PB],
+                ['-b', phonebook.DEFAULT_PB, 'create', phonebook.DEFAULT_PB],
+                ['--db', phonebook.DEFAULT_DB, 'create', phonebook.DEFAULT_PB],
+                ['-b', phonebook.DEFAULT_PB, '--db', phonebook.DEFAULT_DB, 'create', phonebook.DEFAULT_PB])
+
+        for args in args_set:
+            args = parser.parse_args(args) 
             nose.tools.assert_raises(Exception, phonebook.create, args)
             nose.tools.assert_true(database.databases_equal(
-                    'test.db', 'unedited.db'))
+                    phonebook.DEFAULT_DB, UNEDITED_DB))
 
-    def test_create_new_phonebook(self):
-        """Create phonebook that doesn't already exist."""
-
-        args_set = (['create', 'test'],
-                    ['-b', 'test', 'create', 'test'],
-                    ['--db', 'test.db', 'create', 'test'],
-                    ['-b', 'test', '--db', 'test.db', 'create', 'test'])        
+    def test_db_exists_but_not_pb(self):
+        """Create phonebook that doesn't already exist in a
+        database that already exists."""
+        pass      
 
 
 

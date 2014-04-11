@@ -107,6 +107,11 @@ def databases_equal(database1, database2):
     tables2 = list_tables(database2)
 
     if tables1 != tables2:
+        print "tables unequal"
+        print "database1 :", database1
+        print "tables1: ", tables1
+        print "database2: ", database2
+        print "tables2: ", tables2
         return False
 
     else:

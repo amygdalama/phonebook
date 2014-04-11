@@ -1,2 +1,2 @@
-DEFAULT_DATABASE = 'phonebook.db'
-DEFAULT_PHONEBOOK = 'phonebook'
+DEFAULT_DB = 'phonebook.db'
+DEFAULT_PB = 'phonebook'

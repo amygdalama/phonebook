@@ -6,8 +6,8 @@ import config
 import database
 
 
-DEFAULT_DATABASE = config.DEFAULT_DATABASE or 'phonebook.db'
-DEFAULT_PHONEBOOK = config.DEFAULT_PHONEBOOK or 'phonebook'
+DEFAULT_DB = config.DEFAULT_DB or 'phonebook.db'
+DEFAULT_PB = config.DEFAULT_PB or 'phonebook'
 
 
 def print_lookup_results(records, value, phonebook):
@@ -50,8 +50,6 @@ def create(args):
     """Invoked with the `create` command line argument.
     Creates a new table (phonebook) in the given database. Throws an exception
     if the table already exists in the database."""
-
-    print args
 
     if database.table_exists(args.b, args.db):
         raise Exception("Phonebook %s already exists in the database %s." % (
@@ -112,9 +110,9 @@ def parse():
     # How can I elegantly make this option available to all subparsers
     # (after the subparser commands) without adding it manually to each
     # subparser?
-    parser.add_argument('-b', default=DEFAULT_PHONEBOOK,
+    parser.add_argument('-b', default=DEFAULT_PB,
             help="name of the phonebook table in the database") 
-    parser.add_argument('--db', default=DEFAULT_DATABASE, 
+    parser.add_argument('--db', default=DEFAULT_DB, 
             help="name of the database file")   
 
     # Adding subparsers so that different commands can have different
@@ -155,7 +153,7 @@ if __name__ == '__main__':
     parser = parse()
     args = parser.parse_args() 
 
-    if args.db != DEFAULT_DATABASE and not database.database_exists(args.db):
+    if args.db != DEFAULT_DB and not database.database_exists(args.db):
         raise Exception("Database %s doesn't exist!" % args.db)
     
     args.func(args)
