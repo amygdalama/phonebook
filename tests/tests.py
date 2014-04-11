@@ -47,27 +47,59 @@ class DatabaseNonexistent(unittest.TestCase):
         for args in args_set:
             nose.tools.assert_raises(Exception, args.func, args)
 
+
 class TableNonExistent(unittest.TestCase):
     """Test case 2: table doesn't exist in database.
     Every argument except `create` should raise an Exception."""
 
     def setUp(self):
         if glob.glob('*.db'):
-            raise Exception(".db files exist on setUp!")
+            raise Exception(".db files exist on setUp and shouldn't!")
+        database.create_database(TEST_DB)
 
     def tearDown(self):
         for db in glob.glob('*.db'):
             database.delete_database(db)
 
-def read_args(arg=None):
-    """Reads arguments from the arguments.txt file. If an arg is
-    specified, returns only the arguments that contain that arg.
-    Otherwise returns all arguments."""
+    def test_create(self):
+        """Tests the create argument, which should create a new table."""
+        
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = TEST_PB
+        parser = phonebook.parse()
+        args_set = [parser.parse_args(args) for args in read_args()
+                if 'create' in args]
+        for args in args_set:
+            args.func(args)
 
-    if arg:
-        args_set = [line.split() for line in open('arguments.txt') 
-                if arg in line.split()]
-    else:
-        args_set = [line.split() for line in open('arguments.txt')]
-    
-    return args_set
+            # Check that the table was created
+            nose.tools.assert_true(
+                    database.table_exists(TEST_PB, TEST_DB))
+
+            # Check that only one table was created
+            nose.tools.assert_true(
+                    len(database.list_tables(TEST_DB)) == 1)
+
+            # Delete and recreate TEST_DB
+            # There's probably a better way to do this
+            self.tearDown()
+            self.setUp()
+
+
+    def test_all_else(self):
+        """Tests all arguments besides the create argument.
+        These should all raise Exceptions."""
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = TEST_PB
+        parser = phonebook.parse()
+        args_set = [parser.parse_args(args) for args in read_args()
+                if 'create' not in args]
+        for args in args_set:
+            nose.tools.assert_raises(Exception, args.func, args)
+
+
+def read_args():
+    """Reads arguments from the arguments.txt file and returns
+    a nested list of all possible arguments."""
+
+    return [line.split() for line in open('arguments.txt')]
