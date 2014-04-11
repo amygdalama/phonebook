@@ -63,7 +63,7 @@ class TableNonExistent(unittest.TestCase):
 
     def test_create(self):
         """Tests the create argument, which should create a new table."""
-        
+
         phonebook.DEFAULT_DB = TEST_DB
         phonebook.DEFAULT_PB = TEST_PB
         parser = phonebook.parse()
@@ -79,6 +79,10 @@ class TableNonExistent(unittest.TestCase):
             # Check that only one table was created
             nose.tools.assert_true(
                     len(database.list_tables(TEST_DB)) == 1)
+
+            # Check that no records were added
+            nose.tools.assert_true(
+                    len(database.read_table(TEST_PB, TEST_DB)) == 0)
 
             # Delete and recreate TEST_DB
             # There's probably a better way to do this
