@@ -84,9 +84,11 @@
             * db = TEST
             * table = NONEXISTENT
     * assert
-        * add
-        * change
-        * create
-        * lookup
-        * remove
-        * reverse-lookup
+        * add raises exception
+        * change raises exception
+        * create creates new table
+            * assert new table exists
+            * assert previous table unchanged
+        * lookup raises exception
+        * remove raises exception
+        * reverse-lookup raises exception
