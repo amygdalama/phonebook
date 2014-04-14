@@ -44,17 +44,42 @@
         * add creates new record for name
             * assert correct record was added
             * assert no other records were added
-            * assert no other tables were added
-            * assert no other databases were created
+        * change raises Exception
         * lookup raises Exception
-        
+        * remove raises Exception
 
+## case 5:
+    * properties
+        * database, table exist
+        * name exists
+    * assert
+        * add raises exception
+        * change changes the record
+            * assert old record no longer exists
+        * lookup finds the record
+            * assert lookup finds the name
+            * assert lookup doesn't modify the table
+        * remove deletes the record
+            * assert the table is one element less
+            * assert that the record no longer exists
 
+## case 6:
+    * properties
+        * database, table exist
+        * number doesn't exist
+    * assert
+        * reverse-lookup returns no results
+            * assert no results returned
+            * assert table unchanged
 
-
-
-
-
+## case 7:
+    * properties
+        * database, table exist
+        * number exists
+    * assert
+        * reverse-lookup returns result
+            * assert result returned
+            * assert table unchanged
 
 
 
