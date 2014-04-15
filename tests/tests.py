@@ -16,6 +16,8 @@ import phonebook
 
 TEST_DB = 'test.db'
 TEST_PB = 'test_phonebook'
+TEST_NAME = 'test_name'
+TEST_NUM = 'test_num'
 
 
 class DatabaseNonexistent(unittest.TestCase):
@@ -133,6 +135,29 @@ class BothDatabaseAndTableExist(unittest.TestCase):
             print database.read_table(TEST_PB, TEST_DB)
             self.tearDown()
             self.setUp()
+
+
+class NameNonexistent(unittest.TestCase):
+    """Case 4: Db and table both exist but Name doesn't exist."""
+
+    def setUp(self):
+        if glob.glob('*.db'):
+            raise Exception(".db files exist on setUp!")
+
+        # Create test database and table
+        database.create_database(TEST_DB)
+        database.create_table(TEST_PB, TEST_DB)
+
+        # Add some test records
+        add_records()
+
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = TEST_PB
+        self.parser = phonebook.parse()
+
+    def tearDown(self):
+        for db in glob.glob('*.db'):
+            database.delete_database(db)
 
 
 def read_args():

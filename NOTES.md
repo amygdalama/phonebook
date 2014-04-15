@@ -1,6 +1,6 @@
 # Tests
 
-## case 1:
+## [x] case 1:
     * properties
         * database doesn't exist
         * parser arguments
@@ -14,7 +14,7 @@
         * remove raises exception
         * reverse-lookup raises exception
 
-## case 2:
+## [x] case 2:
     * properties
         * database exists but table doesn't exist
         * parser args
@@ -30,7 +30,7 @@
         * remove raises exception
         * reverse-lookup raises exception
 
-## case 3:
+## [x] case 3:
     * properties
         * database and table both exist
     * assert
