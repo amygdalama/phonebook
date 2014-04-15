@@ -230,6 +230,133 @@ class NameNonexistent(unittest.TestCase):
                         record[0], 'name', TEST_PB, TEST_DB) == [record])
 
 
+class NameExists(unittest.TestCase):
+    """Case 5: DB, table, and name all exist.
+    Create and reverse-lookup args aren't applicable."""
+
+    def setUp(self):
+        if glob.glob('*.db'):
+            raise Exception(".db files exist on setUp!")
+
+        # Create test database and table
+        database.create_database(TEST_DB)
+        database.create_table(TEST_PB, TEST_DB)
+
+        # Add some test records
+        add_records()
+
+        # Add the test record
+        database.add_record(TEST_RECORD, TEST_PB, TEST_DB)
+
+        self.parser = phonebook.parse()
+
+    def tearDown(self):
+        for db in glob.glob('*.db'):
+            database.delete_database(db)
+
+    def test_add(self):
+        """Add args should raise exceptions and not modify db."""
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'add' in args]
+
+        for args in args_set:
+            nose.tools.assert_raises(Exception, args.func, args)
+
+            # Check that the test record hasn't been modified
+            nose.tools.assert_true(database.lookup_record(
+                    TEST_NAME, 'name', TEST_PB, TEST_DB) == [TEST_RECORD])
+
+            # Check that no other records were added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS + 1)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
+
+    def test_change(self):
+        """Change args should change the record."""
+
+        new_num = 'test_new_num'
+        new_record = (TEST_NAME, new_num)
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'change' in args]
+
+        for args in args_set:
+            args.func(args)
+
+            # Check that the test record has been modified
+            nose.tools.assert_true(database.lookup_record(
+                    TEST_NAME, 'name', TEST_PB, TEST_DB) == [new_record])
+
+            # Check that no other records were added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS + 1)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
+
+            self.tearDown()
+            self.setUp()
+
+    def test_lookup(self):
+        """Lookup args should return the record."""
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'lookup' in args]
+
+        for args in args_set:
+            # Check that lookup returns the correct record
+            nose.tools.assert_true(args.func(args) == [TEST_RECORD])
+
+            # Check that the test record hasn't been modified
+            nose.tools.assert_true(database.lookup_record(
+                    TEST_NAME, 'name', TEST_PB, TEST_DB) == [TEST_RECORD])
+
+            # Check that no records were added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS + 1)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
+
+    def test_remove(self):
+        """Remove args should remove the record."""
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'remove' in args]
+
+        for args in args_set:
+            args.func(args)
+
+            # Check that the record has been deleted
+            nose.tools.assert_false(database.lookup_record(
+                TEST_NAME, 'name', TEST_PB, TEST_DB))
+
+            # Check that there's one less record
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
+
+            self.tearDown()
+            self.setUp()
+
+
 def read_args():
     """Reads arguments from the arguments.txt file and returns
     a nested list of all possible arguments."""
