@@ -190,6 +190,25 @@ class NameNonexistent(unittest.TestCase):
             self.tearDown()
             self.setUp()
 
+    def test_lookup(self):
+        """Lookup args should return no results."""
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'lookup' in args]
+
+        for args in args_set:
+            # Check that lookup returns no results
+            nose.tools.assert_false(args.func(args))
+
+            # Check that no records were added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
 
     def test_change_remove(self):
         """Change and remove args should raise Exceptions."""
@@ -200,6 +219,15 @@ class NameNonexistent(unittest.TestCase):
         for args in args_set:
             nose.tools.assert_raises(Exception, args.func, args)
 
+            # Check that no records were added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
 
 
 def read_args():
