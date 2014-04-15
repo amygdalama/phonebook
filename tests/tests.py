@@ -13,11 +13,14 @@ sys.path.insert(0, '../')
 import database
 import phonebook
 
-
 TEST_DB = 'test.db'
 TEST_PB = 'test_phonebook'
 TEST_NAME = 'test_name'
 TEST_NUM = 'test_num'
+TEST_RECORD = (TEST_NAME, TEST_NUM)
+
+# is there a better way to do this?
+NUM_RECORDS = sum(1 for line in open('test_records.txt'))
 
 # Overwrite the defaults for -b and --db
 # so we can test the behavior of our script when
@@ -136,7 +139,8 @@ class BothDatabaseAndTableExist(unittest.TestCase):
 
 
 class NameNonexistent(unittest.TestCase):
-    """Case 4: Db and table both exist but Name doesn't exist."""
+    """Case 4: DB and table both exist but Name doesn't exist.
+    Don't need to test create or reverse lookup args."""
 
     def setUp(self):
         if glob.glob('*.db'):
@@ -154,6 +158,42 @@ class NameNonexistent(unittest.TestCase):
     def tearDown(self):
         for db in glob.glob('*.db'):
             database.delete_database(db)
+
+    def test_add(self):
+        """Add args should create a new record and leave other
+        records alone."""
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'add' in args]
+
+        for args in args_set:
+            args.func(args)
+
+            # Check that the record was added
+            nose.tools.assert_true(
+                    database.lookup_record(TEST_NAME, 'name', 
+                            TEST_PB, TEST_DB) == [TEST_RECORD])
+            
+            # Check that only one record was added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS + 1)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
+
+            self.tearDown()
+            self.setUp()
+
+
+    def test_change_lookup_remove(self):
+        """Change, lookup, and remove args should raise Exceptions."""
+        
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'change' in args or 'lookup' in args 
+                or 'remove' in args]
 
 
 def read_args():
