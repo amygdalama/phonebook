@@ -19,6 +19,12 @@ TEST_PB = 'test_phonebook'
 TEST_NAME = 'test_name'
 TEST_NUM = 'test_num'
 
+# Overwrite the defaults for -b and --db
+# so we can test the behavior of our script when
+# we use default values for these arguments
+phonebook.DEFAULT_DB = TEST_DB
+phonebook.DEFAULT_PB = TEST_PB
+
 
 class DatabaseNonexistent(unittest.TestCase):
     """Test case 1: database doesn't exist.
@@ -36,11 +42,6 @@ class DatabaseNonexistent(unittest.TestCase):
 
     def test_all(self):
 
-        # Overwrite the defaults for -b and --db
-        # so we can test the behavior of our script when
-        # we use default values for these arguments
-        phonebook.DEFAULT_DB = TEST_DB
-        phonebook.DEFAULT_PB = TEST_PB
         parser = phonebook.parse()
         args_set = [parser.parse_args(args) for args in read_args()]
         
@@ -55,10 +56,9 @@ class TableNonExistent(unittest.TestCase):
     def setUp(self):
         if glob.glob('*.db'):
             raise Exception(".db files exist on setUp and shouldn't!")
+        
         database.create_database(TEST_DB)
 
-        phonebook.DEFAULT_DB = TEST_DB
-        phonebook.DEFAULT_PB = TEST_PB
         self.parser = phonebook.parse()
 
     def tearDown(self):
@@ -116,8 +116,6 @@ class BothDatabaseAndTableExist(unittest.TestCase):
         # Add some test records
         add_records()
 
-        phonebook.DEFAULT_DB = TEST_DB
-        phonebook.DEFAULT_PB = TEST_PB
         self.parser = phonebook.parse()
 
     def tearDown(self):
@@ -151,8 +149,6 @@ class NameNonexistent(unittest.TestCase):
         # Add some test records
         add_records()
 
-        phonebook.DEFAULT_DB = TEST_DB
-        phonebook.DEFAULT_PB = TEST_PB
         self.parser = phonebook.parse()
 
     def tearDown(self):
