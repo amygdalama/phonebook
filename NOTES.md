@@ -36,7 +36,7 @@
     * assert
         * create raises exception
 
-## case 4:
+## [x] case 4:
     * properties
         * database and table both exist
         * name doesn't exist

@@ -94,6 +94,8 @@ def add_record(values, table, database):
 def delete_record(value, column, table, database):
     if not database_exists(database):
         raise Exception("That database doesn't exist!")
+    elif not lookup_record(value, column, table, database):
+        raise Exception("That record doesn't exist in the database!")
     else:
         with sqlite3.connect(database) as con:
             c = con.cursor()

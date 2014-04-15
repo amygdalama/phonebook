@@ -102,6 +102,10 @@ class TableNonExistent(unittest.TestCase):
         for args in args_set:
             nose.tools.assert_raises(Exception, args.func, args)
 
+            # Check that no tables were created
+            nose.tools.assert_true(
+                    len(database.list_tables(TEST_DB)) == 0)
+
 
 class BothDatabaseAndTableExist(unittest.TestCase):
     """Case 3: Both Database and Table Exist. Attempting to
@@ -133,14 +137,13 @@ class BothDatabaseAndTableExist(unittest.TestCase):
 
         for args in args_set:
             nose.tools.assert_raises(Exception, args.func, args)
-            print database.read_table(TEST_PB, TEST_DB)
             self.tearDown()
             self.setUp()
 
 
 class NameNonexistent(unittest.TestCase):
     """Case 4: DB and table both exist but Name doesn't exist.
-    Don't need to test create or reverse lookup args."""
+    Create and reverse-lookup args aren't applicable."""
 
     def setUp(self):
         if glob.glob('*.db'):
@@ -188,12 +191,15 @@ class NameNonexistent(unittest.TestCase):
             self.setUp()
 
 
-    def test_change_lookup_remove(self):
-        """Change, lookup, and remove args should raise Exceptions."""
+    def test_change_remove(self):
+        """Change and remove args should raise Exceptions."""
         
         args_set = [self.parser.parse_args(args) for args in read_args()
-                if 'change' in args or 'lookup' in args 
-                or 'remove' in args]
+                if 'change' in args or 'remove' in args]
+
+        for args in args_set:
+            nose.tools.assert_raises(Exception, args.func, args)
+
 
 
 def read_args():
