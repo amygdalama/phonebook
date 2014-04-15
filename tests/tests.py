@@ -356,6 +356,111 @@ class NameExists(unittest.TestCase):
             self.tearDown()
             self.setUp()
 
+        def test_all_else(self):
+            """Change and reverse-lookup should raise Exceptions. 
+            Script isn't ready for this though."""
+            pass
+
+
+class NumberNonexistent(unittest.TestCase):
+    """Case 6: DB and table both exist but Number doesn't exist.
+    Add, Change, Remove, Lookup args aren't applicable."""
+
+    def setUp(self):
+        if glob.glob('*.db'):
+            raise Exception(".db files exist on setUp!")
+
+        # Create test database and table
+        database.create_database(TEST_DB)
+        database.create_table(TEST_PB, TEST_DB)
+
+        # Add some test records
+        add_records()
+
+        self.parser = phonebook.parse()
+
+    def tearDown(self):
+        for db in glob.glob('*.db'):
+            database.delete_database(db)
+
+    def test_reverse_lookup(self):
+        """Reverse-lookup args should return no results."""
+        
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'reverse-lookup' in args]
+
+        for args in args_set:
+            # Check that lookup returns no results
+            nose.tools.assert_false(args.func(args))
+
+            # Check that no records were added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
+
+    def test_all_else(self):
+        """All other args should raise exceptions. Script isn't ready
+        for this yet, though."""
+        pass
+
+
+class NumberExists(unittest.TestCase):
+    """Case 7: DB, table, and Number all exist."""
+
+    def setUp(self):
+        if glob.glob('*.db'):
+            raise Exception(".db files exist on setUp!")
+
+        # Create test database and table
+        database.create_database(TEST_DB)
+        database.create_table(TEST_PB, TEST_DB)
+
+        # Add some test records
+        add_records()
+
+        # Add the test record
+        database.add_record(TEST_RECORD, TEST_PB, TEST_DB)
+
+        self.parser = phonebook.parse()
+
+    def tearDown(self):
+        for db in glob.glob('*.db'):
+            database.delete_database(db)
+
+    def test_reverse_lookup(self):
+        """Reverse-lookup should return result."""
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'reverse-lookup' in args]
+
+        for args in args_set:
+            # Check that lookup returns the correct record
+            nose.tools.assert_true(args.func(args) == [TEST_RECORD])
+
+            # Check that the test record hasn't been modified
+            nose.tools.assert_true(database.lookup_record(
+                    TEST_NUM, 'number', TEST_PB, TEST_DB) == [TEST_RECORD])
+
+            # Check that no records were added
+            nose.tools.assert_true(
+                    len(database.read_table(
+                            TEST_PB, TEST_DB)) == NUM_RECORDS + 1)
+
+            # Check that all other records remain the same
+            for record in read_records():
+                nose.tools.assert_true(database.lookup_record(
+                        record[0], 'name', TEST_PB, TEST_DB) == [record])
+
+    def test_all_else(self):
+        """Other args should raise Exceptions, but script isn't ready
+        for this yet."""
+        pass
+
 
 def read_args():
     """Reads arguments from the arguments.txt file and returns

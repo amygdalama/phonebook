@@ -16,7 +16,7 @@ remove test_name
 -b test_phonebook remove test_name
 --db test.db remove test_name
 --db test.db -b test_phonebook remove test_name
-reverse-lookup test_name
+reverse-lookup test_num
 -b test_phonebook reverse-lookup test_num
 --db test.db reverse-lookup test_num
 --db test.db -b test_phonebook reverse-lookup test_num
