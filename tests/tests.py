@@ -16,8 +16,6 @@ import phonebook
 
 TEST_DB = 'test.db'
 TEST_PB = 'test_phonebook'
-TEST_NAME = 'test_name'
-TEST_NUM = 'test_number'
 
 
 class DatabaseNonexistent(unittest.TestCase):
@@ -57,6 +55,10 @@ class TableNonExistent(unittest.TestCase):
             raise Exception(".db files exist on setUp and shouldn't!")
         database.create_database(TEST_DB)
 
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = TEST_PB
+        self.parser = phonebook.parse()
+
     def tearDown(self):
         for db in glob.glob('*.db'):
             database.delete_database(db)
@@ -64,10 +66,7 @@ class TableNonExistent(unittest.TestCase):
     def test_create(self):
         """Tests the create argument, which should create a new table."""
 
-        phonebook.DEFAULT_DB = TEST_DB
-        phonebook.DEFAULT_PB = TEST_PB
-        parser = phonebook.parse()
-        args_set = [parser.parse_args(args) for args in read_args()
+        args_set = [self.parser.parse_args(args) for args in read_args()
                 if 'create' in args]
         for args in args_set:
             args.func(args)
@@ -92,13 +91,48 @@ class TableNonExistent(unittest.TestCase):
     def test_all_else(self):
         """Tests all arguments besides the create argument.
         These should all raise Exceptions."""
-        phonebook.DEFAULT_DB = TEST_DB
-        phonebook.DEFAULT_PB = TEST_PB
-        parser = phonebook.parse()
-        args_set = [parser.parse_args(args) for args in read_args()
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
                 if 'create' not in args]
         for args in args_set:
             nose.tools.assert_raises(Exception, args.func, args)
+
+
+class BothDatabaseAndTableExist(unittest.TestCase):
+    """Case 3: Both Database and Table Exist. Attempting to
+    create the table should raise an Exception and leave the existing
+    table in tact."""
+
+    def setUp(self):
+        if glob.glob('*.db'):
+            raise Exception(".db files exist on setUp!")
+
+        # Create test database and table
+        database.create_database(TEST_DB)
+        database.create_table(TEST_PB, TEST_DB)
+
+        # Add some test records
+        add_records()
+
+        phonebook.DEFAULT_DB = TEST_DB
+        phonebook.DEFAULT_PB = TEST_PB
+        self.parser = phonebook.parse()
+
+    def tearDown(self):
+        for db in glob.glob('*.db'):
+            database.delete_database(db)
+
+    def test_create(self):
+        """Test the create arguments, which should raise Exceptions."""
+
+        args_set = [self.parser.parse_args(args) for args in read_args()
+                if 'create' in args]
+
+        for args in args_set:
+            nose.tools.assert_raises(Exception, args.func, args)
+            print database.read_table(TEST_PB, TEST_DB)
+            self.tearDown()
+            self.setUp()
 
 
 def read_args():
@@ -106,3 +140,16 @@ def read_args():
     a nested list of all possible arguments."""
 
     return [line.split() for line in open('arguments.txt')]
+
+def read_records():
+    """Reads test records from test_records.txt."""
+    return [tuple(line.strip().split('\t')) for line in open('test_records.txt')]
+
+def add_records(pb=TEST_PB, db=TEST_DB):
+    """Adds test records to the test database."""
+
+    records = read_records()
+    for record in records: database.add_record(record, pb, db)
+
+
+
