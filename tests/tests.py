@@ -28,6 +28,18 @@ phonebook.DEFAULT_DB = TEST_DB
 phonebook.DEFAULT_PB = TEST_PB
 
 
+class AllTheThings(unittest.TestCase):
+    def shared_setup(self):
+        if glob.glob('*.db'):
+            raise Exception(".db files exist on setUp!")
+
+    def tearDown(self):
+        for db in glob.glob('*.db'):
+            database.delete_database(db)
+        raise Exception("New .db files were unintentionally created!")
+
+
+
 class DatabaseNonexistent(unittest.TestCase):
     """Test case 1: database doesn't exist.
     Every argument should raise an Exception for this case."""
@@ -36,17 +48,10 @@ class DatabaseNonexistent(unittest.TestCase):
         if glob.glob('*.db'):
             raise Exception(".db files exist on setUp!")
 
-    def tearDown(self):
-        if glob.glob('*.db'):
-            for db in glob.glob('*.db'):
-                database.delete_database(db)
-            raise Exception("New .db files were unintentionally created!")
-
     def test_all(self):
-
         parser = phonebook.parse()
         args_set = [parser.parse_args(args) for args in read_args()]
-        
+
         for args in args_set:
             nose.tools.assert_raises(Exception, args.func, args)
 
@@ -58,14 +63,10 @@ class TableNonExistent(unittest.TestCase):
     def setUp(self):
         if glob.glob('*.db'):
             raise Exception(".db files exist on setUp and shouldn't!")
-        
+
         database.create_database(TEST_DB)
 
         self.parser = phonebook.parse()
-
-    def tearDown(self):
-        for db in glob.glob('*.db'):
-            database.delete_database(db)
 
     def test_create(self):
         """Tests the create argument, which should create a new table."""
@@ -124,10 +125,6 @@ class BothDatabaseAndTableExist(unittest.TestCase):
 
         self.parser = phonebook.parse()
 
-    def tearDown(self):
-        for db in glob.glob('*.db'):
-            database.delete_database(db)
-
     def test_create(self):
         """Test the create arguments, which should raise Exceptions."""
 
@@ -156,10 +153,6 @@ class NameNonexistent(unittest.TestCase):
         add_records()
 
         self.parser = phonebook.parse()
-
-    def tearDown(self):
-        for db in glob.glob('*.db'):
-            database.delete_database(db)
 
     def test_add(self):
         """Add args should create a new record and leave other
@@ -229,14 +222,12 @@ class NameNonexistent(unittest.TestCase):
                         record[0], 'name', TEST_PB, TEST_DB) == [record])
 
 
-class NameExists(unittest.TestCase):
+class NameExists(AllTheThings):
     """Case 5: DB, table, and name all exist.
     Create and reverse-lookup args aren't applicable."""
 
     def setUp(self):
-        if glob.glob('*.db'):
-            raise Exception(".db files exist on setUp!")
-
+        self.shared_setup()
         # Create test database and table
         database.create_database(TEST_DB)
         database.create_table(TEST_PB, TEST_DB)
@@ -248,10 +239,6 @@ class NameExists(unittest.TestCase):
         database.add_record(TEST_RECORD, TEST_PB, TEST_DB)
 
         self.parser = phonebook.parse()
-
-    def tearDown(self):
-        for db in glob.glob('*.db'):
-            database.delete_database(db)
 
     def test_add(self):
         """Add args should raise exceptions and not modify db."""
@@ -378,13 +365,9 @@ class NumberNonexistent(unittest.TestCase):
 
         self.parser = phonebook.parse()
 
-    def tearDown(self):
-        for db in glob.glob('*.db'):
-            database.delete_database(db)
-
     def test_reverse_lookup(self):
         """Reverse-lookup args should return no results."""
-        
+
         args_set = [self.parser.parse_args(args) for args in read_args()
                 if 'reverse-lookup' in args]
 
@@ -426,10 +409,6 @@ class NumberExists(unittest.TestCase):
         database.add_record(TEST_RECORD, TEST_PB, TEST_DB)
 
         self.parser = phonebook.parse()
-
-    def tearDown(self):
-        for db in glob.glob('*.db'):
-            database.delete_database(db)
 
     def test_reverse_lookup(self):
         """Reverse-lookup should return result."""
