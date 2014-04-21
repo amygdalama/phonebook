@@ -13,8 +13,8 @@ DEFAULT_PB = config.DEFAULT_PB or 'phonebook'
 def print_lookup_results(records, value, phonebook):
 
     if records:
-        for record in records:
-            print "%s\t%s" % (record[0], record[1])
+        for name, number in records:
+            print "%s\t%s" % (name, number)
     else:
         print "%s isn't in %s." % (value, phonebook)
 
