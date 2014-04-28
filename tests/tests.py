@@ -7,6 +7,7 @@ import nose
 # TODO: Make this whole thing a package so I don't have to 
 # do this hacky path modification to import database, phonebook
 sys.path.insert(0, '../')
+print(sys.path)
 
 import database
 import phonebook
@@ -17,7 +18,7 @@ TEST_NAME = 'test_name'
 TEST_NUM = 'test_num'
 TEST_RECORD = (TEST_NAME, TEST_NUM)
 
-NUM_RECORDS = len(open('test_records.txt'))
+NUM_RECORDS = len(open('/Users/amyhanlon/projects/phonebook/tests/test_records.txt'))
 
 # Overwrite the defaults for -b and --db
 # so we can test the behavior of our script when
