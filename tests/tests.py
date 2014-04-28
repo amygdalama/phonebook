@@ -19,7 +19,7 @@ TEST_NAME = 'test_name'
 TEST_NUM = 'test_num'
 TEST_RECORD = (TEST_NAME, TEST_NUM)
 
-NUM_RECORDS = len(open('test_records.txt')))
+NUM_RECORDS = len(open('test_records.txt'))
 
 # Overwrite the defaults for -b and --db
 # so we can test the behavior of our script when
