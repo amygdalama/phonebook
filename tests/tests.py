@@ -4,10 +4,8 @@ import unittest
 
 import nose
 
-# add parent directory to import database and phonebook scripts
-# how can I make the database and phonebook modules available
-# in a more elegant way? Would making this group of scripts a
-# package solve this problem?
+# TODO: Make this whole thing a package so I don't have to 
+# do this hacky path modification to import database, phonebook
 sys.path.insert(0, '../')
 
 import database
