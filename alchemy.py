@@ -10,5 +10,5 @@ class Contact(Base):
     name = Column(String(250), nullable=False)
     number = Column(String(20), nullable=False)
 
-engine = create_engine('sqlite:///sqlalchemy_phonebook.db')
+engine = create_engine('sqlite:///phonebook.db')
 Base.metadata.create_all(engine)

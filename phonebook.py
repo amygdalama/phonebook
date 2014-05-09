@@ -4,9 +4,7 @@ import argparse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import config
 from alchemy import Base, Contact
-import database
 
 
 def print_lookup_results(records):
@@ -16,17 +14,14 @@ def print_lookup_results(records):
     else:
         print "No phonebook entries found."
 
-def add(name, number):
-    """Invoked with the `add` command line argument. Attempts to add 
-    an entry to a specified phonebook. Raises exceptions if the phonebook
-    doesn't exist or if the entry already exists in the phonebook."""
+def add(name, number, session):
     new_contact = Contact(name=name, number=number)
     session.add(new_contact)
     session.commit()
     print "Added the new contact:"
     print "%s\t%s" % (name, number)
 
-def change(name, number):
+def change(name, number, session):
     records = lookup(name)
     if records:
         print "Updated the following entries:"
@@ -37,12 +32,12 @@ def change(name, number):
     else:
         print "No phonebook entries found."
 
-def lookup(name):
+def lookup(name, session):
     records = session.query(Contact).filter_by(name=name).all()
     return records
 
-def remove(name): 
-    records = lookup(name)
+def remove(name, session): 
+    records = lookup(name, session)
     if records:
         print "Deleted the following entries:"
         for record in records:
@@ -52,7 +47,7 @@ def remove(name):
     else:
         print "No phonebook entries found."
 
-def reverse_lookup(number):
+def reverse_lookup(number, session):
     records = session.query(Contact).filter_by(number=number).all()
     return records
 
@@ -88,7 +83,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    engine = create_engine('sqlite:///sqlalchemy_phonebook.db')
+    engine = create_engine('sqlite:///phonebook.db')
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
@@ -97,6 +92,7 @@ if __name__ == '__main__':
     args = parser.parse_args() 
     func = args.func
     del args.func
+    args.session = session
     results = func(**vars(args))
     if results != None:     # execute even if results == []
         print_lookup_results(results)
