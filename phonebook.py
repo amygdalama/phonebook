@@ -1,81 +1,64 @@
 #! /usr/bin/env python
 
 import argparse
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 import config
+from alchemy import Base, Contact
 import database
 
 
-DEFAULT_DB = config.DEFAULT_DB or 'phonebook.db'
-DEFAULT_PB = config.DEFAULT_PB or 'phonebook'
-
-
-def print_lookup_results(records, value, phonebook):
-
+def print_lookup_results(records):
     if records:
-        for name, number in records:
-            print "%s\t%s" % (name, number)
+        for record in records:
+            print "%s\t%s" % (record.name, record.number)
     else:
-        print "%s isn't in %s." % (value, phonebook)
+        print "No phonebook entries found."
 
-
-
-def add(args):
+def add(name, number):
     """Invoked with the `add` command line argument. Attempts to add 
     an entry to a specified phonebook. Raises exceptions if the phonebook
     doesn't exist or if the entry already exists in the phonebook."""
+    new_contact = Contact(name=name, number=number)
+    session.add(new_contact)
+    session.commit()
+    print "Added the new contact:"
+    print "%s\t%s" % (name, number)
 
-    database.add_record((args.name, args.number), args.b, args.db)
-    print "Added the following entry to %s:" % args.b
-    print "%s\t%s" % (args.name, args.number)
+def change(name, number):
+    records = lookup(name)
+    if records:
+        print "Updated the following entries:"
+        for record in records:
+            record.number = number
+            print "%s\t%s" % (record.name, record.number)
+        session.commit()
+    else:
+        print "No phonebook entries found."
 
-
-def change(args):
-    
-    remove(args)
-    add(args)
-
-
-def create(args):
-    """Invoked with the `create` command line argument.
-    Creates a new table (phonebook) in the given database. Throws an exception
-    if the table already exists in the database."""
-
-    database.create_table(args.b, args.db)
-    print "Created phonebook %s in the %s database." % (args.b, args.db)
-
-
-def lookup(args):
-    records = database.lookup_record(args.name, 'name', args.b, args.db)
-    print_lookup_results(records, args.name, args.b)
+def lookup(name):
+    records = session.query(Contact).filter_by(name=name).all()
     return records
 
+def remove(name): 
+    records = lookup(name)
+    if records:
+        print "Deleted the following entries:"
+        for record in records:
+            session.delete(record)
+            print "%s\t%s" % (record.name, record.number)
+        session.commit()
+    else:
+        print "No phonebook entries found."
 
-def remove(args): 
-    database.delete_record(args.name, 'name', args.b, args.db)
-    print "Removed %s from %s." % (args.name, args.b)
-
-
-def reverse_lookup(args):
-    records = database.lookup_record(args.number, 'number', args.b, args.db)
-    print_lookup_results(records, args.number, args.b)
+def reverse_lookup(number):
+    records = session.query(Contact).filter_by(number=number).all()
     return records
 
-
-def parse():
+def parse_args():
     parser = argparse.ArgumentParser(description='A phonebook command line tool!')
 
-    # To-do: -b right now only works if it's put before the subparser commands
-    # How can I elegantly make this option available to all subparsers
-    # (after the subparser commands) without adding it manually to each
-    # subparser?
-    parser.add_argument('-b', default=DEFAULT_PB,
-            help="name of the phonebook table in the database") 
-    parser.add_argument('--db', default=DEFAULT_DB, 
-            help="name of the database file")   
-
-    # Adding subparsers so that different commands can have different
-    # required positional arguments
     subparsers = parser.add_subparsers()
 
     parser_add = subparsers.add_parser('add')
@@ -88,10 +71,6 @@ def parse():
     parser_change.add_argument('name', help="name of person as a string")
     parser_change.add_argument('number', help="phone number as a string")   
     parser_change.set_defaults(func=change) 
-
-    parser_create = subparsers.add_parser('create')
-    parser_create.add_argument('b', help="name of phonebook table in database")
-    parser_create.set_defaults(func=create)
 
     parser_lookup = subparsers.add_parser('lookup')
     parser_lookup.add_argument('name')
@@ -109,10 +88,15 @@ def parse():
 
 
 if __name__ == '__main__':
-    parser = parse()
-    args = parser.parse_args() 
-    args.func(args)
+    engine = create_engine('sqlite:///sqlalchemy_phonebook.db')
+    Base.metadata.bind = engine
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
 
-# General things:
-# Should I pass var(args) to these functions and use kwargs instead?
-# There's a lot of repetition/duplication in my exception handling.
+    parser = parse_args()
+    args = parser.parse_args() 
+    func = args.func
+    del args.func
+    results = func(**vars(args))
+    if results != None:     # execute even if results == []
+        print_lookup_results(results)
